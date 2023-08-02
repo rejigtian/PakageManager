@@ -19,10 +19,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import dalvik.system.DexFile;
 
@@ -102,7 +104,9 @@ public class FileUtil {
                     totalSize = classSet.size() + pkgSet.size();
                     lastCallTime = checkNeedCallback(progressCallback, lastCallTime, (float) index, totalSize);
                 }
-                for (String str : pkgSet){
+                Set<String> sortSet = new TreeSet<>((o1, o2) -> o2.compareTo(o1));
+                sortSet.addAll(pkgSet);
+                for (String str : sortSet){
                     Log.e(TAG, "onClick: " + str );
                     FileUtil.writeFileAppend(getSaveFolder()+"/pkg_name.txt", str);
                     index ++;

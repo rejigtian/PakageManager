@@ -13,5 +13,6 @@ public class Main {
         fileCacheList.add(3);
         fileCacheList.add(4);
         Collections.sort(fileCacheList, (file, newFile) -> Long.compare(file, newFile));
+        System.out.println(fileCacheList);
     }
 }
