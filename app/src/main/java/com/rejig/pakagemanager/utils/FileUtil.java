@@ -14,6 +14,8 @@ import android.util.Log;
 
 import androidx.test.internal.runner.ClassPathScanner;
 
+import com.rejig.pakagemanager.model.PkgConfig;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -83,8 +85,9 @@ public class FileUtil {
                 Set<String> classSet = classPathScanner.getClassPathEntries(new ClassPathScanner.AcceptAllFilter());
                 handler.removeCallbacksAndMessages(null);
                 HashSet<String> pkgSet = new HashSet<>();
+                HashSet<String> rootSet = new HashSet<>();
                 int index = 0;
-                int totalSize = classSet.size() + pkgSet.size();
+                int totalSize = classSet.size();
                 for (String str : classSet){
                     int lastIndex = str.lastIndexOf(".");
                     if (lastIndex == -1) {
@@ -92,16 +95,16 @@ public class FileUtil {
                     }
                     FileUtil.writeFileAppend(getSaveFolder()+"/class_name.txt", str);
                     str = str.substring(0, lastIndex);
-                    int nextIndex = str.lastIndexOf(".");
-                    if (nextIndex == str.length() - 2){
-                        str = str.substring(0, lastIndex);
+                    if (checkContainRoot(str, rootSet)){
+                        continue;
+                    } else if (!checkWhiteList(str)){
+                        rootSet.add(str + ".");
                     }
-                    str ="-keep class " + str + ".**{*;}";
+                    str ="-keep class " + str + ".*{*;}";
 
                     pkgSet.add(str);
                     Log.e(TAG, "onClick: " + str );
                     index ++;
-                    totalSize = classSet.size() + pkgSet.size();
                     lastCallTime = checkNeedCallback(progressCallback, lastCallTime, (float) index, totalSize);
                 }
                 Set<String> sortSet = new TreeSet<>((o1, o2) -> o2.compareTo(o1));
@@ -117,6 +120,24 @@ public class FileUtil {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    private static boolean checkWhiteList(String str) {
+        for (String s : PkgConfig.COMMON_PKG_LIST) {
+            if (str.contains(s)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean checkContainRoot(String str, HashSet<String> rootSet) {
+        for (String s : rootSet) {
+            if (str.contains(s)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void virtualProgressCall(Handler handler, ProgressCallback progressCallback,final float progress) {
